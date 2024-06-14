@@ -3,10 +3,6 @@ from env.drill import Drill
 from env.workplan import Workplan
 
 
-class Action(Enum):
-    DRILL = 1
-    SKIP = 2
-    CHANGE = 3
 
 
 class Agent:
