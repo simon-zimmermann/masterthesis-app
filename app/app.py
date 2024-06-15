@@ -1,3 +1,4 @@
+from cgi import test
 import numpy as np
 from mushroom_rl.policy import EpsGreedy
 from mushroom_rl.utils.parameters import Parameter, ExponentialParameter
@@ -7,6 +8,8 @@ from mushroom_rl.utils.dataset import compute_metrics
 
 
 from GridWorld2 import GridWorld2
+from drillEnv.workplan import Workplan
+from drillEnv.action import DrillAction
 from drillEnv.drillEnv import DrillEnv
 
 
@@ -65,22 +68,24 @@ def drillExperiment():
     pi = EpsGreedy(epsilon=epsilon)
 
     # Agent
-    learning_rate = Parameter(value=.2)
+    learning_rate = Parameter(value=.5)
     agent = QLearning(env.info, pi, learning_rate=learning_rate)
 
     # Core
     core = Core(agent, env)
 
     print("evaluate")
-    dataset = core.evaluate(n_episodes=10, render=False)
+    dataset = core.evaluate(n_episodes=100, render=False)
     print_metrics(dataset, env.info.gamma)
+    print_dataset(dataset, 10)
 
     print("start training")
     core.learn(n_episodes=10000, n_steps_per_fit=1, render=False)
 
     print("evaluate")
-    dataset = core.evaluate(n_episodes=10, render=False)
+    dataset = core.evaluate(n_episodes=100, render=False)
     print_metrics(dataset, env.info.gamma)
+    print_dataset(dataset, 100)
 
 
 def print_metrics(dataset, gamma):
@@ -88,6 +93,29 @@ def print_metrics(dataset, gamma):
     print("Minimum score: %.2f, Maximum score: %.2f, Mean score: %.2f, Median Score: %.2f, Num episodes: %d" % J)
 
 
+def print_dataset(dataset, limit: int = 30):
+    print("print_dataset")
+    for i in range(min(limit, len(dataset))):
+        data = dataset[i]
+        end_state_obj = DrillEnv.unobserve(data[3])
+        end_life = end_state_obj["remainingLife"]
+        end_wp = end_state_obj["workplan"]
+        action = data[1][0]
+        reward = data[2]
+        print("state after action: %12s, reward: %4d, life: %3d, workplan: %s" %
+              (DrillAction(action).name, reward, end_life, end_wp))
+
+
+def test_observation():
+    wp = Workplan()
+    wp.random_init()
+    print("Workplan: %s" % wp)
+    print("Observation: ", wp.observe())
+    wp2: Workplan = Workplan.unobserve(wp.observe())
+    print("Workplan: %s" % wp2)
+
+
 if __name__ == "__main__":
     # gridExperiment()
+    test_observation()
     drillExperiment()
