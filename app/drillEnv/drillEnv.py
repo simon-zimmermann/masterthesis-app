@@ -14,7 +14,7 @@ class DrillEnv(Environment):
     def __init__(self):
         self.state = None  # the state to be passed to the agent
         self.action: DrillAction = None  # the last action performed by the agent
-        self.workplan: Workplan
+        self.workplan: Workplan = None
         self.remainingLife = 100
         self.waitsteps = 0  # how many steps we have to wait until we can perform the next action. used for changing the drill bit
 
@@ -91,3 +91,13 @@ class DrillEnv(Environment):
             'remainingLife': state[0] % (DrillEnv.DRILL_MAX_LIFE + 1),
             'workplan': Workplan.unobserve(state[0] // (DrillEnv.DRILL_MAX_LIFE + 1))
         }
+
+    def test_observation():
+        env = DrillEnv()
+        env.reset()
+        env_info_str = "life: %d, workplan: %s" % (env.remainingLife, env.workplan)
+        state = env.observe()
+        unobserved_info = DrillEnv.unobserve(state)
+        unobserved_info_str = "life: %d, workplan: %s" % (env.remainingLife, env.workplan)
+        assert env_info_str == unobserved_info_str, "DrillEnv could not unobserve its own observation"
+        print("DrillEnv can unobserve its own observation")
