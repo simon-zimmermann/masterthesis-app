@@ -9,7 +9,7 @@ def drillExperiment():
     #experiment.print_dataset(100)
 
     #experiment.train(1000)
-    experiment.train(5000)
+    experiment.train(10000)
     experiment.plot_training_data()
 
     experiment.eval_perf(1)

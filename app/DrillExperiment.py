@@ -41,11 +41,11 @@ class DrillExperiment:
         DrillEnv.test_observation()  # sanity check
 
         # Policy
-        self.epsilon = ExponentialParameter(value=1.0, exp=0.05, min_value=0.1)
+        self.epsilon = ExponentialParameter(value=0.5, exp=0.03, min_value=0.1)
         self.pi = EpsGreedy(epsilon=self.epsilon)
 
         # Agent
-        self.learning_rate = Parameter(value=.5)
+        self.learning_rate = ExponentialParameter(value=.8, exp=0.05, min_value=0.1)
         self.agent = QLearning(self.env.info, self.pi, learning_rate=self.learning_rate)
 
         # MushroomRL Core
