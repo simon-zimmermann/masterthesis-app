@@ -8,7 +8,7 @@
             "name": "masterthsis-app",
             "type": "debugpy",
             "request": "launch",
-            "program": "app/app.py",
+            "program": "app/main.py",
             "console": "integratedTerminal",
             "justMyCode": false
         }
