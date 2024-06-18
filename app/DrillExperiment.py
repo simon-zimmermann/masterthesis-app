@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from mushroom_rl.policy import EpsGreedy
-from mushroom_rl.utils.parameters import Parameter, ExponentialParameter
+from mushroom_rl.utils.parameters import Parameter, ExponentialParameter, LinearParameter
 from mushroom_rl.algorithms.value import QLearning
 from mushroom_rl.core import Core, Logger
 from mushroom_rl.utils.dataset import compute_metrics
@@ -37,15 +37,18 @@ class DrillExperiment:
         }
 
         # Environment
-        self.env = DrillEnv()
-        DrillEnv.test_observation()  # sanity check
+        gamma = 0.7
+        self.env = DrillEnv(gamma, self.logger)
+        self.env.test_observation()  # sanity check
 
         # Policy
-        self.epsilon = ExponentialParameter(value=0.5, exp=0.03, min_value=0.1)
+        # self.epsilon = ExponentialParameter(value=0.5, exp=0.03, min_value=0.1)
+        self.epsilon = LinearParameter(value=1.0, threshold_value=0.1, n=5000000)
         self.pi = EpsGreedy(epsilon=self.epsilon)
 
         # Agent
-        self.learning_rate = ExponentialParameter(value=.8, exp=0.05, min_value=0.1)
+        # self.learning_rate = ExponentialParameter(value=.8, exp=0.05, min_value=0.1)
+        self.learning_rate = Parameter(value=0.1)
         self.agent = QLearning(self.env.info, self.pi, learning_rate=self.learning_rate)
 
         # MushroomRL Core
@@ -62,6 +65,9 @@ class DrillExperiment:
         self.core.learn(n_episodes=n_episodes, n_steps_per_fit=1)
 
     def eval_perf(self, n_episodes: int):
+        self.logger.weak_line()
+        self.logger.info("Start Evaluation for %d episodes" % n_episodes)
+        self.logger.weak_line()
         dataset = self.core.evaluate(n_episodes=n_episodes, render=False)
         self.last_dataset = dataset
 
@@ -77,7 +83,8 @@ class DrillExperiment:
         return ret
 
     def print_dataset(self, limit: int = 30):
-        print("print_dataset")
+        self.logger.weak_line()
+        self.logger.info("Printing %d steps of the last dataset" % limit)
         for i in range(min(limit, len(self.last_dataset))):
             data = self.last_dataset[i]
             exploded = DrillExperiment.explode_eval_dataset_entry(data)
@@ -88,26 +95,21 @@ class DrillExperiment:
                    exploded["end_wp"]))
 
     def print_metrics(self):
-        J = compute_metrics(self.last_dataset, self.env.info.gamma)
-        print("Minimum score: %.2f, Maximum score: %.2f, Mean score: %.2f, Median Score: %.2f, Num episodes: %d" % J)
+        min, max, mean, median, length = compute_metrics(self.last_dataset, self.env.info.gamma)
+        self.logger.info("Metrics:")
+        self.logger.info("\tMinimum score: %.2f" % min)
+        self.logger.info("\tMaximum score: %.2f" % max)
+        self.logger.info("\tMean score: %.2f" % mean)
+        self.logger.info("\tMedian Score: %.2f" % median)
+        self.logger.info("\tNumber of episodes: %d" % length)
 
     def plot_training_data(self):
-        # fig, ax = plt.subplots(3, 1)
-        # ax[0].plot(self.training_log_step["end_life"], label="End Life")
-        # ax[0].plot(self.training_log_step["reward"], label="Reward")
-        # ax[0].legend()
-        # ax[1].plot(self.training_log_step["epsilon"], label="Epsilon")
-        # ax[1].plot(self.training_log_step["learning_rate"], label="Learning Rate")
-        # ax[1].legend()
-        # ax[2].plot(self.training_log_step["absorbing"], label="Absorbing")
-        # ax[2].plot(self.training_log_step["last"], label="Last")
-        # ax[2].legend()
-        # plt.show()
+        self.logger.info("Plotting training data")
         fig, ax = plt.subplots(3, 1)
         ax[0].plot(self.training_log_episode["min_life"], label="Min Life")
         ax[0].plot(self.training_log_episode["avg_life"], label="Avg Life")
         ax[0].legend()
-        ax[1].plot(self.training_log_episode["cum_reward"], label="Cum Reward")
+        ax[1].plot(self.training_log_episode["cum_reward"], label="Cumulative Reward")
         ax[1].legend()
         ax[2].plot(self.training_log_episode["epsilon"], label="Epsilon")
         ax[2].plot(self.training_log_episode["learning_rate"], label="Learning Rate")

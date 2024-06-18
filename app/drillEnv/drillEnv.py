@@ -8,23 +8,25 @@ from drillEnv.action import DrillAction
 
 
 class DrillEnv(Environment):
-    CHANGE_DURATION = 2  # how many steps it takes to change the drill bit
+    CHANGE_DURATION = 1  # how many steps it takes to change the drill bit
     DRILL_MAX_LIFE = 99  # the maximum life of the drill. 99 to mathe the maths easier
 
-    def __init__(self):
+    def __init__(self, gamma, logger):
         self.state = None  # the state to be passed to the agent
         self.action: DrillAction = None  # the last action performed by the agent
         self.workplan: Workplan = None
         self.remainingLife = 100
         self.waitsteps = 0  # how many steps we have to wait until we can perform the next action. used for changing the drill bit
+        self.logger = logger
 
         # MDP properties
         observation_space = spaces.Discrete((DrillEnv.DRILL_MAX_LIFE + 1) * Workplan.num_discrete_states())
-        print("Observation space size: ", observation_space.values[-1] + 1)
+        logger.info("Initializing DrillEnv.")
+        logger.info("Observation space size: %d" % (observation_space.values[-1] + 1))
         action_space = spaces.Discrete(len(DrillAction))
-        print("Action space size: ", action_space.values[-1] + 1)
+        logger.info("Action space size: %d" % (action_space.values[-1] + 1))
         horizon = 1000  # maximum length of an episode
-        gamma = .2  # the closer to 1, the more the agent cares about the future rewards
+        # gamma = .2  # the closer to 1, the more the agent cares about the future rewards
         # dt = 0.5  # timestep for visualization
         mdp_info = MDPInfo(observation_space, action_space, gamma, horizon)
         super().__init__(mdp_info)
@@ -58,7 +60,7 @@ class DrillEnv(Environment):
         # Perform the action
         match self.action:
             case DrillAction.CHANGE_BIT:
-                reward = -5 * self.remainingLife  # penalty for changing the drill bit
+                reward = -50 * (self.remainingLife - 20)  # penalty for changing the drill bit
                 self.remainingLife = DrillEnv.DRILL_MAX_LIFE
                 self.waitsteps = self.CHANGE_DURATION
             case DrillAction.REQUEUE_PART:
@@ -66,11 +68,11 @@ class DrillEnv(Environment):
                 reward = -1  # small penalty for requeueing a part
             case DrillAction.DO_WORK:
                 workitem = self.workplan.get_next_part()
-                self.remainingLife -= workitem.intensity
-                reward = 10 * workitem.intensity  # give a reward for doing work. proportional to the intensity of the work
+                self.remainingLife -= 3 * workitem.intensity
+                reward = 20 * workitem.intensity  # give a reward for doing work. proportional to the intensity of the work
             case DrillAction.IDLE:
                 ignored_item = self.workplan.get_next_part()  # but do nothing with it
-                reward = -10 * ignored_item.intensity  # punish if ideling on a part, that could have been worked on
+                reward = -5 * ignored_item.intensity  # punish if ideling on a part, that could have been worked on
 
         # print("state after action: %12s, reward: %4d, life: %3d, workplan: %s" %
         #       (DrillAction(action).name, reward, self.remainingLife, self.workplan))
@@ -92,12 +94,11 @@ class DrillEnv(Environment):
             'workplan': Workplan.unobserve(state[0] // (DrillEnv.DRILL_MAX_LIFE + 1))
         }
 
-    def test_observation():
-        env = DrillEnv()
-        env.reset()
-        env_info_str = "life: %d, workplan: %s" % (env.remainingLife, env.workplan)
-        state = env.observe()
+    def test_observation(self):
+        self.reset()
+        env_info_str = "life: %d, workplan: %s" % (self.remainingLife, self.workplan)
+        state = self.observe()
         unobserved_info = DrillEnv.unobserve(state)
-        unobserved_info_str = "life: %d, workplan: %s" % (env.remainingLife, env.workplan)
+        unobserved_info_str = "life: %d, workplan: %s" % (self.remainingLife, self.workplan)
         assert env_info_str == unobserved_info_str, "DrillEnv could not unobserve its own observation"
-        print("DrillEnv can unobserve its own observation")
+        self.logger.info("Test complete. DrillEnv can unobserve its own observation.")
