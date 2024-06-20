@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
 from mushroom_rl.core import Core
 from mushroom_rl.policy import EpsGreedy
 from mushroom_rl.utils.parameters import Parameter, LinearParameter
@@ -10,9 +9,8 @@ import drillEnv.config as config
 
 
 class DrillExperimentQ:
-    def __init__(self):
+    def __init__(self, load_agent_name: None | str = None):
         np.random.seed()
-        #self.logger = Logger(DrillExperimentQ.__name__, results_dir="logs")
         self.logger = DrillEnvDataLogger()
         self.logger.strong_line()
         self.logger.info('Experiment Algorithm: ' + QLearning.__name__)
@@ -20,24 +18,28 @@ class DrillExperimentQ:
         self.last_dataset = None  # Result dataset from last evaluation run
 
         # Environment
-        gamma = config.TRAINING_GAMMA # the closer to 1, the more the agent cares about the future rewards
-        self.env = DrillEnv(self.logger)
+        gamma = config.TRAINING_GAMMA  # the closer to 1, the more the agent cares about the future rewards
+        self.env = DrillEnv(gamma, self.logger)
         self.env.test_observation()  # sanity check
 
         # Policy
-        # self.epsilon = ExponentialParameter(value=0.5, exp=0.03, min_value=0.1)
         self.epsilon = LinearParameter(value=1.0, threshold_value=1.0, n=1)
         self.pi = EpsGreedy(epsilon=self.epsilon)
 
         # Agent
-        # self.learning_rate = ExponentialParameter(value=.8, exp=0.05, min_value=0.1)
-        self.learning_rate = Parameter(value=config.TRAINING_LEARNING_RATE)
-        self.agent = QLearning(self.env.info, self.pi, learning_rate=self.learning_rate)
+        if (load_agent_name):
+            self.logger.weak_line()
+            self.logger.info("Loading agent from file: %s.msh" % load_agent_name)
+            self.logger.weak_line()
+            self.agent = QLearning.load(load_agent_name + ".msh")
+        else:
+            self.learning_rate = Parameter(value=config.TRAINING_LEARNING_RATE)
+            self.agent = QLearning(self.env.info, self.pi, learning_rate=self.learning_rate)
 
         # MushroomRL Core
         self.core = Core(self.agent, self.env, callbacks_fit=[self.logger.log_step_callback])
 
-    def train(self, n_episodes: int, print_plot = False):
+    def train(self, n_episodes: int, print_plot=False):
         # initialize logger
         self.logger.init_training(self.epsilon, self.learning_rate)
 
@@ -63,7 +65,7 @@ class DrillExperimentQ:
         if print_plot:
             self.logger.plot_training_log()
 
-    def eval_performance(self, print_demo = False):
+    def eval_performance(self, print_demo=False):
         n_episodes = 10
         self.logger.weak_line()
         self.logger.info("Start Evaluation for %d episodes" % n_episodes)
@@ -76,6 +78,5 @@ class DrillExperimentQ:
         if print_demo:
             self.logger.log_dataset(self.last_dataset, 50)
 
-        
-
-
+    def save_agent(self, filename: str):
+        self.agent.save(filename + ".msh", full_save=True)
