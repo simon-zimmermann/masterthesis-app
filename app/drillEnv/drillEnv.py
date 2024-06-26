@@ -49,7 +49,7 @@ class DrillEnv(Environment):
         if self.waitsteps > 0:
             self.waitsteps -= 1
             reward = 0  # do not give a reward for waiting
-            self.action = DrillAction.IDLE  # force idle action
+            #self.action = DrillAction.IDLE  # force idle action
             return self.state, reward, False, {}  # do not change the state, do not end the episode
 
         # check if the drill is broken
@@ -62,6 +62,10 @@ class DrillEnv(Environment):
             case DrillAction.CHANGE_BIT:
                 # penalty for changing the drill bit
                 reward = config.REWARD_FACTOR_CHANGE * (self.remainingLife - config.DRILL_ACCEPTED_CHANGE_LIFE)
+                w1 = self.workplan.plan[0].intensity
+                w2 = self.workplan.plan[1].intensity
+                reward_penalty = -10 * (w1 + w2)  
+                reward += reward_penalty
                 self.remainingLife = config.DRILL_MAX_LIFE
                 self.waitsteps = config.CHANGE_DURATION
             case DrillAction.REQUEUE_PART:
@@ -72,10 +76,10 @@ class DrillEnv(Environment):
                 self.remainingLife -= config.DRILL_WORK_FACTOR * workitem.intensity
                 # give a reward for doing work. proportional to the intensity of the work
                 reward = config.REWARD_FACTOR_WORK * workitem.intensity
-            case DrillAction.IDLE:
-                ignored_item = self.workplan.get_next_part()  # but do nothing with it
-                # punish if ideling on a part, that could have been worked on
-                reward = config.REWARD_FACTOR_IDLE * ignored_item.intensity
+            # case DrillAction.IDLE:
+            #     ignored_item = self.workplan.get_next_part()  # but do nothing with it
+            #     # punish if ideling on a part, that could have been worked on
+            #     reward = config.REWARD_FACTOR_IDLE * ignored_item.intensity
 
         self.state = self.observe()
         return self.state, reward, False, {}  # Absorbing states are handled above

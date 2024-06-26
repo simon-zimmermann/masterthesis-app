@@ -14,4 +14,7 @@ class Workitem:
         pass
 
     def generate_random():
-        return Workitem(random.randint(Workitem.INTENSITY_MIN, Workitem.INTENSITY_MAX))
+        rand = random.randint(Workitem.INTENSITY_MIN, Workitem.INTENSITY_MAX + 1)
+        if rand == Workitem.INTENSITY_MAX + 1:
+            rand = Workitem.INTENSITY_MIN # make more 0s
+        return Workitem(rand)

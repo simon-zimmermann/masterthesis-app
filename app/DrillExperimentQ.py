@@ -76,7 +76,7 @@ class DrillExperimentQ:
         # Log evaluation results
         self.logger.print_metrics(self.last_dataset, self.env.info.gamma)
         if print_demo:
-            self.logger.log_dataset(self.last_dataset, 50)
+            self.logger.log_dataset(self.last_dataset, 200)
 
     def save_agent(self, filename: str):
         self.agent.save(filename + ".msh", full_save=True)

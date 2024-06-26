@@ -4,7 +4,7 @@ from drillEnv.workitem import Workitem
 
 
 class Workplan:
-    OBSERVED_LENGTH = 4
+    OBSERVED_LENGTH = 6
 
     def __init__(self):
         self.plan = deque[Workitem]()

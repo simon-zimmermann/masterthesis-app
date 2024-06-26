@@ -3,19 +3,20 @@ from mushroom_rl.core import Logger
 import numpy as np
 from mushroom_rl.utils.dataset import compute_metrics
 from mushroom_rl.utils.parameters import Parameter
+import os
 
 from drillEnv.action import DrillAction
 from drillEnv.drillEnv import DrillEnv
 
 
 class DrillEnvDataLogger(Logger):
-    
-    def __init__(self):        
+
+    def __init__(self):
         self.reset_data()
         self.epsilon = Parameter(value=0)
         self.learning_rate = Parameter(value=0)
 
-        super().__init__(DrillEnvDataLogger.__name__, results_dir="logs")
+        super().__init__(DrillEnvDataLogger.__name__, results_dir="logs", log_console=True, use_timestamp=True)
 
     def reset_data(self):
         self.training_log_step = {  # While training, relevant information is logged here
@@ -57,7 +58,7 @@ class DrillEnvDataLogger(Logger):
         data = data[0]
         end_state_obj = DrillEnv.unobserve(data[3])
         self.training_log_step["end_life"].append(end_state_obj["remainingLife"])
-        #self.training_log_step["end_wp"].append(end_state_obj["workplan"])
+        # self.training_log_step["end_wp"].append(end_state_obj["workplan"])
         self.training_log_step["action"].append(data[1][0])
         self.training_log_step["reward"].append(data[2])
         self.training_log_step["epsilon"].append(self.epsilon.get_value())
@@ -65,23 +66,22 @@ class DrillEnvDataLogger(Logger):
         self.training_log_step["absorbing"].append(data[4])
         self.training_log_step["last"].append(data[5])
 
-        if(data[4] or data[5]): # if a episode has finished, calculate stuff
+        if (data[4] or data[5]):  # if a episode has finished, calculate stuff
             self.training_log_episode["min_life"].append(min(self.training_log_step["end_life"]))
             self.training_log_episode["avg_life"].append(np.average(self.training_log_step["end_life"]))
             self.training_log_episode["cum_reward"].append(sum(self.training_log_step["reward"]))
             self.training_log_episode["epsilon"].append(self.epsilon.get_value())
             self.training_log_episode["learning_rate"].append(self.learning_rate.get_value())
             self.training_log_step = {
-            "end_life": [],
-            "end_wp": [],
-            "action": [],
-            "reward": [],
-            "epsilon": [],
-            "learning_rate": [],
-            "absorbing": [],
-            "last": []
-        }
-
+                "end_life": [],
+                "end_wp": [],
+                "action": [],
+                "reward": [],
+                "epsilon": [],
+                "learning_rate": [],
+                "absorbing": [],
+                "last": []
+            }
 
     def print_metrics(self, dataset, gamma: float):
         min, max, mean, median, length = compute_metrics(dataset, gamma)
@@ -103,4 +103,5 @@ class DrillEnvDataLogger(Logger):
         ax[2].plot(self.training_log_episode["epsilon"], label="Epsilon")
         ax[2].plot(self.training_log_episode["learning_rate"], label="Learning Rate")
         ax[2].legend()
+        plt.savefig(os.path.join(self._results_dir, "training_plot.png"))
         plt.show()
