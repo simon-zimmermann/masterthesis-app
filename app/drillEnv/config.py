@@ -5,6 +5,7 @@ EVENT_HORIZON = 1000  # maximum length of an episode
 
 REWARD_BROKEN = -100  # reward for breaking the drill
 REWARD_REQUEUE = -10  # reward for requeueing a part
+REWARD_REQUEUE = -10  # reward for requeueing a part
 REWARD_FACTOR_CHANGE = -20  # reward factor for changing the drill bit
 REWARD_FACTOR_WORK = 20  # reward factor for doing work
 # REWARD_FACTOR_IDLE = -5  # reward factor for ignoring a part

@@ -2,6 +2,8 @@ import random
 
 import drillEnv.config as config
 
+import drillEnv.config as config
+
 
 class Workitem:
 
@@ -11,6 +13,7 @@ class Workitem:
         if num_holes < 0 or num_holes > config.NUM_HOLES_MAX:
             raise ValueError("Num holes must be between %d and %d; not %d" % (0, config.NUM_HOLES_MAX, num_holes))
         self.intensity = intensity
+        self.num_holes = num_holes
         self.num_holes = num_holes
         pass
 

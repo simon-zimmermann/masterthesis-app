@@ -57,6 +57,7 @@ class DrillEnv(Environment):
         if self.remainingLife <= 0:
             reward = config.REWARD_BROKEN
             self.state = self.observe()
+            self.state = self.observe()
             return self.state, reward, True, {}  # do not change the state, end the episode
 
         # Perform the action
@@ -66,6 +67,7 @@ class DrillEnv(Environment):
                 reward = config.REWARD_FACTOR_CHANGE * (self.remainingLife - config.DRILL_ACCEPTED_CHANGE_LIFE)
                 w1 = self.workplan.plan[0].intensity
                 w2 = self.workplan.plan[1].intensity
+                reward_penalty = -10 * (w1 + w2)
                 reward_penalty = -10 * (w1 + w2)
                 reward += reward_penalty
                 self.remainingLife = config.DRILL_MAX_LIFE
@@ -106,8 +108,15 @@ class DrillEnv(Environment):
         print("Testing observation")
         self.remainingLife = 42
         env_info_str = "life: %d, workplan: %s" % (self.remainingLife, str(self.workplan))
+        print("Testing observation")
+        self.remainingLife = 42
+        env_info_str = "life: %d, workplan: %s" % (self.remainingLife, str(self.workplan))
         state = self.observe()
         unobserved_info = DrillEnv.unobserve(state)
+        unobserved_info_str = "life: %d, workplan: %s" % (
+            unobserved_info["remainingLife"], str(unobserved_info["workplan"]))
+        print(env_info_str)
+        print(unobserved_info_str)
         unobserved_info_str = "life: %d, workplan: %s" % (
             unobserved_info["remainingLife"], str(unobserved_info["workplan"]))
         print(env_info_str)

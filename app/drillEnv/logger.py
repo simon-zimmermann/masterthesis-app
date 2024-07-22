@@ -8,6 +8,7 @@ import os
 from drillEnv.action import DrillAction
 from drillEnv.drillEnv import DrillEnv
 import drillEnv.config as config
+import drillEnv.config as config
 
 
 class DrillEnvDataLogger(Logger):
@@ -58,6 +59,7 @@ class DrillEnvDataLogger(Logger):
             #elif(action == DrillAction.CHANGE_BIT):
             #    drillchange_remaining_steps = config.CHANGE_DURATION
             print("state after action: %12s, reward: %4d, life: %3d, workplan: %s" %
+                  (action.name,
                   (action.name,
                    data[2],
                    end_state_obj["remainingLife"],
