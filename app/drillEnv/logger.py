@@ -60,7 +60,6 @@ class DrillEnvDataLogger(Logger):
             #    drillchange_remaining_steps = config.CHANGE_DURATION
             print("state after action: %12s, reward: %4d, life: %3d, workplan: %s" %
                   (action.name,
-                  (action.name,
                    data[2],
                    end_state_obj["remainingLife"],
                    end_state_obj["workplan"]))
