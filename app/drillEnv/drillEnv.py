@@ -49,12 +49,14 @@ class DrillEnv(Environment):
         if self.waitsteps > 0:
             self.waitsteps -= 1
             reward = 0  # do not give a reward for waiting
-            #self.action = DrillAction.IDLE  # force idle action
+            # self.action = DrillAction.IDLE  # force idle action
+            self.state = self.observe()
             return self.state, reward, False, {}  # do not change the state, do not end the episode
 
         # check if the drill is broken
         if self.remainingLife <= 0:
             reward = config.REWARD_BROKEN
+            self.state = self.observe()
             return self.state, reward, True, {}  # do not change the state, end the episode
 
         # Perform the action
@@ -64,7 +66,7 @@ class DrillEnv(Environment):
                 reward = config.REWARD_FACTOR_CHANGE * (self.remainingLife - config.DRILL_ACCEPTED_CHANGE_LIFE)
                 w1 = self.workplan.plan[0].intensity
                 w2 = self.workplan.plan[1].intensity
-                reward_penalty = -10 * (w1 + w2)  
+                reward_penalty = -10 * (w1 + w2)
                 reward += reward_penalty
                 self.remainingLife = config.DRILL_MAX_LIFE
                 self.waitsteps = config.CHANGE_DURATION
@@ -73,9 +75,10 @@ class DrillEnv(Environment):
                 reward = config.REWARD_REQUEUE  # small penalty for requeueing a part
             case DrillAction.DO_WORK:
                 workitem = self.workplan.get_next_part()
-                self.remainingLife -= config.DRILL_WORK_FACTOR * workitem.intensity
+                work_done = workitem.intensity * workitem.num_holes
+                self.remainingLife -= config.DRILL_WORK_FACTOR * work_done
                 # give a reward for doing work. proportional to the intensity of the work
-                reward = config.REWARD_FACTOR_WORK * workitem.intensity
+                reward = config.REWARD_FACTOR_WORK * work_done
             # case DrillAction.IDLE:
             #     ignored_item = self.workplan.get_next_part()  # but do nothing with it
             #     # punish if ideling on a part, that could have been worked on
@@ -101,9 +104,14 @@ class DrillEnv(Environment):
 
     def test_observation(self):
         self.reset()
-        env_info_str = "life: %d, workplan: %s" % (self.remainingLife, self.workplan)
+        print("Testing observation")
+        self.remainingLife = 42
+        env_info_str = "life: %d, workplan: %s" % (self.remainingLife, str(self.workplan))
         state = self.observe()
         unobserved_info = DrillEnv.unobserve(state)
-        unobserved_info_str = "life: %d, workplan: %s" % (unobserved_info["remainingLife"], unobserved_info["workplan"])
+        unobserved_info_str = "life: %d, workplan: %s" % (
+            unobserved_info["remainingLife"], str(unobserved_info["workplan"]))
+        print(env_info_str)
+        print(unobserved_info_str)
         assert env_info_str == unobserved_info_str, "DrillEnv could not unobserve its own observation"
         self.logger.info("Test complete. DrillEnv can unobserve its own observation.")

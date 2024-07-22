@@ -7,6 +7,7 @@ import os
 
 from drillEnv.action import DrillAction
 from drillEnv.drillEnv import DrillEnv
+import drillEnv.config as config
 
 
 class DrillEnvDataLogger(Logger):
@@ -44,12 +45,20 @@ class DrillEnvDataLogger(Logger):
     def log_dataset(self, dataset, limit: int):
         self.weak_line()
         self.info("Printing %d steps of the last dataset" % limit)
+        drillchange_remaining_steps = 0
         for i in range(min(limit, len(dataset))):
             data = dataset[i]
             # exploded = DrillExperimentQ.explode_eval_dataset_entry(data)
             end_state_obj = DrillEnv.unobserve(data[3])
+            # check for idle due to drill bit change
+            action = DrillAction(data[1][0])
+            if(drillchange_remaining_steps > 0):
+                action = DrillAction.CHANGE_BIT
+                drillchange_remaining_steps -= 1
+            elif(action == DrillAction.CHANGE_BIT):
+                drillchange_remaining_steps = config.CHANGE_DURATION
             print("state after action: %12s, reward: %4d, life: %3d, workplan: %s" %
-                  (DrillAction(data[1][0]).name,
+                  (action.name,
                    data[2],
                    end_state_obj["remainingLife"],
                    end_state_obj["workplan"]))
