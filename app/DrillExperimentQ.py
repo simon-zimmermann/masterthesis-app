@@ -48,8 +48,8 @@ class DrillExperimentQ:
         self.learning_rate._n_updates[0] = 0
 
         # re-initialize epsilon, so that it will be linearly decreasing across the whole episode length
-        expected_sample_count = n_episodes * config .EVENT_HORIZON
-        self.epsilon.__init__(value=1.0, threshold_value=0.01, n=(expected_sample_count * 0.9))
+        expected_sample_count = n_episodes * config.EVENT_HORIZON
+        self.epsilon.__init__(value=1.0, threshold_value=0.05, n=(expected_sample_count * 0.5))
 
         # Log training info
         self.logger.weak_line()

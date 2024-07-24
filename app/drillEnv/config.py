@@ -11,8 +11,8 @@ REWARD_FACTOR_WORK = 100  # reward factor for doing work
 DRILL_ACCEPTED_CHANGE_LIFE = 20  # how much life is acceptable to be lost when changing the drill bit
 DRILL_WORK_FACTOR = 3  # how much life is lost per work item intensity
 
-TRAINING_GAMMA = 0.3  # the closer to 1, the more the agent cares about the future rewards
-TRAINING_LEARNING_RATE = 0.5  # the learning rate of the Q-learning algorithm
+TRAINING_GAMMA = 0.7  # the closer to 1, the more the agent cares about the future rewards
+TRAINING_LEARNING_RATE = 0.3  # the learning rate of the Q-learning algorithm
 
 INTENSITY_MAX = 3
 NUM_HOLES_MAX = 2
