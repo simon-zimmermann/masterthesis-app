@@ -38,6 +38,9 @@ class Workplan:
         self.plan.rotate(-1)
 
     def get_next_part(self):
+        return self.plan[0]
+
+    def pop_next_part(self):
         self.plan.append(Workitem.generate_random())
         return self.plan.popleft()
 
