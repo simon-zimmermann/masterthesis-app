@@ -14,6 +14,6 @@ DRILL_WORK_FACTOR = 3  # how much life is lost per work item intensity
 TRAINING_GAMMA = 0.3  # the closer to 1, the more the agent cares about the future rewards
 TRAINING_LEARNING_RATE = 0.3  # the learning rate of the Q-learning algorithm
 
-INTENSITY_MAX = 2
+INTENSITY_MAX = 3
 NUM_HOLES_MAX = 2
-WORKPLAN_LENGTH = 6
+WORKPLAN_LENGTH = 5
