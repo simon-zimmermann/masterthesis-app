@@ -49,7 +49,6 @@ class DrillEnv(Environment):
         if self.remainingLife <= 0:
             reward = config.REWARD_BROKEN
             self.state = self.observe()
-            self.state = self.observe()
             return self.state, reward, True, {}  # do not change the state, end the episode
 
         # Perform the action
@@ -73,7 +72,7 @@ class DrillEnv(Environment):
                 reward = config.REWARD_FACTOR_WORK * workitem.get_drill_wear()
 
         self.state = self.observe()
-        return self.state, reward, False, {}  # Absorbing states are handled above
+        return self.state, reward, False, {}
 
     def stop(self):
         pass
