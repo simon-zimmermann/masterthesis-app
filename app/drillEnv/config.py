@@ -1,9 +1,9 @@
 # Simulation
-DRILL_MAX_LIFE = 60  # the maximum life of the drill
+DRILL_MAX_LIFE = 100  # the maximum life of the drill
 EVENT_HORIZON = 1000  # maximum length of an episode
-INTENSITY_MAX = 3 # maximum intensity of a workpiece; minimum is 1
-NUM_HOLES_MAX = 2 # maximum number of holes in a workpiece; minimum is 0
-WORKPLAN_LENGTH = 5 # length of the workplan, influences the size of the state space massively
+INTENSITY_MAX = 3  # maximum intensity of a workpiece; minimum is 1
+NUM_HOLES_MAX = 2  # maximum number of holes in a workpiece; minimum is 0
+WORKPLAN_LENGTH = 5  # length of the workplan, influences the size of the state space massively
 DRILL_WORK_FACTOR = 3  # how much life is lost per work done (intensity*num_holes)
 # Rewards
 REWARD_BROKEN = -10000  # penalty for breaking the drill

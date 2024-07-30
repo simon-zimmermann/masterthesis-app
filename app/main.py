@@ -5,7 +5,7 @@ def drillExperimentTrain():
     experiment = DrillExperimentQ()
 
     experiment.eval_performance(print_demo=False)
-    experiment.train(n_episodes=5000, print_plot=True)
+    experiment.train(n_episodes=500000, print_plot=True)
     experiment.eval_performance(print_demo=True)
 
     experiment.save_agent("agent1")
